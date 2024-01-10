@@ -1,6 +1,6 @@
 <script lang="ts">
 	import axios from 'axios';
-	import { setTokens } from '$lib/store';
+	import { setTokens } from '$lib/store/tokens';
 	import type { Tokens } from '$lib/types/tokens';
 	import { goto } from '$app/navigation';
 	import { API_URL } from '$lib/http';

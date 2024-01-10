@@ -2,7 +2,7 @@
 	import CopyIcon from '$lib/Icons/CopyIcon.svelte';
 	import CourseLesson from './CourseLesson.svelte';
 	import EditIcon from '$lib/Icons/EditIcon.svelte';
-	import { goto } from '$app/navigation';
+	import MinusIcon from '$lib/Icons/MinusIcon.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import type { Lesson } from '$lib/types/lesson';
 	import api from '$lib/http';
@@ -28,6 +28,27 @@
 
 		dispatch('remove', courseId);
 	};
+
+	const generateInviteCode = async () => {
+		const res = await api.get<string>(`api/course/invite/generate/${courseId}`);
+
+		return res.data;
+	};
+
+	const copyToClipboard = async () => {
+		const input = document.createElement('input');
+		document.body.appendChild(input);
+		input.value = window.location.origin + `/courses/invite/${await generateInviteCode()}`;
+		input.select();
+		document.execCommand('copy');
+		document.body.removeChild(input);
+		alert('Ссылка скопирована в буфер обмена!');
+	};
+
+	const unsubscribe = async () => {
+		await api.post(`/api/course/unsubscribe/${courseId}`);
+		location.reload();
+	};
 </script>
 
 <div class="w-full p-4 my-7 rounded-box">
@@ -45,10 +66,14 @@
 					<span>Редактировать</span>
 					<EditIcon />
 				</a>
-				<div class="btn btn-secondary font-bold">
+				<button class="btn btn-secondary font-bold" on:click={copyToClipboard}>
 					<span>Ссылка</span>
 					<CopyIcon />
-				</div>
+				</button>
+			</div>
+		{:else}
+			<div>
+				<button class="btn btn-secondary" on:click={unsubscribe}><MinusIcon />Отписаться</button>
 			</div>
 		{/if}
 	</div>

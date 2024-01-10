@@ -13,9 +13,14 @@
 
 	onMount(async () => {
 		try {
-			lessonText = (await api.get(`/api/lesson/text/${lessonId}`)).data;
 			lesson = (await api.get(`/api/lesson/get/${lessonId}`)).data;
 		} catch (err) {
+			console.error(err);
+		}
+		try {
+			lessonText = (await api.get(`/api/lesson/text/${lessonId}`)).data;
+		} catch (err) {
+			lessonText = 'В данный момент тут пусто :(';
 			console.error(err);
 		}
 	});

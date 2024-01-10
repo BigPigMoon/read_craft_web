@@ -1,4 +1,4 @@
-import type { Tokens } from "./types/tokens"
+import type { Tokens } from "../types/tokens"
 
 const ACCESS = 'access';
 const REFRESH = 'refresh';

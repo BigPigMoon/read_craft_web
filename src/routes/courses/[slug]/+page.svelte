@@ -5,30 +5,23 @@
 	import { onMount } from 'svelte';
 	import type { Lesson } from '$lib/types/lesson';
 	import api from '$lib/http';
-	import EditLessonCard from '$lib/components/EditLessonCard.svelte';
+	import EditLessonCard from '$lib/components/course/EditLessonCard.svelte';
 
 	const courseId = $page.params.slug;
 
 	let lessons: Lesson[] = [];
-
-	// FIXME: it need to be used, later....
-	let isOwner: boolean = false;
+	let loading = false;
 
 	onMount(async () => {
-		try {
-			const res = await api.get<boolean>(`/api/course/owner/${courseId}`);
-
-			isOwner = res.data;
-		} catch (err) {
-			console.error(err);
-		}
-
+		loading = true;
 		try {
 			const res = await api.get<Lesson[]>(`/api/lesson/all?course=${courseId}`);
 
 			lessons = res.data;
 		} catch (err) {
 			console.error(err);
+		} finally {
+			loading = false;
 		}
 	});
 
@@ -37,7 +30,7 @@
 	let createLessonCover =
 		'https://sun9-53.userapi.com/impg/j9ucAouuIb4M0QCPW1j_U5tuT9fD-G2KOUOWmQ/l6JXJsGsc54.jpg?size=510x518&quality=96&sign=b86a49f053a93b42a66233e5dc39d8fc&type=album';
 
-	const handleCreateLesson = async () => {
+	const createLesson = async () => {
 		if (createLessonError) return;
 
 		const res = await api.post<number>('/api/lesson/create', {
@@ -51,13 +44,18 @@
 			id: res.data,
 			title: createLessonTitle,
 			cover_path: createLessonCover,
-			subject: createLessonDesc
+			subject: createLessonDesc,
+			course_id: Number.parseInt(courseId)
 		};
 
-		lessons = [...lessons, newLesson];
+		lessons.push(newLesson);
+		lessons = lessons;
 
 		// @ts-ignore
 		document.getElementById('create_lesson')?.close();
+
+		createLessonTitle = '';
+		createLessonDesc = '';
 	};
 
 	const removeItem = (event: any) => {
@@ -120,19 +118,24 @@
 					{/if}
 				</div>
 			</form>
-			<button class="btn btn-primary mt-12 w-full" on:click={handleCreateLesson}> Создать </button>
+			<button class="btn btn-primary mt-12 w-full" on:click={createLesson}> Создать </button>
 		</div>
 	</dialog>
 </div>
 
-<div class="my-16 flex flex-col space-y-8">
-	{#each lessons as lesson}
-		<EditLessonCard
-			cover={lesson.cover_path}
-			title={lesson.title}
-			subject={lesson.subject}
-			id={lesson.id}
-			on:remove={removeItem}
-		/>
-	{/each}
-</div>
+{#if loading}
+	<div class="h-64 w-full flex justify-center items-center">
+		<span class="loading loading-spinner loading-md"></span>
+	</div>
+{:else}
+	<div class="my-16 flex flex-col space-y-4">
+		{#each lessons as lesson, index}
+			<EditLessonCard
+				title={lesson.title}
+				id={lesson.id}
+				index={index + 1}
+				on:remove={removeItem}
+			/>
+		{/each}
+	</div>
+{/if}

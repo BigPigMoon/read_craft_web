@@ -1,6 +1,6 @@
 
 import axios from "axios";
-import { clearTokens, getTokens, setTokens } from "./store";
+import { clearTokens, getTokens, setTokens } from "./store/tokens";
 import type { Tokens } from "./types/tokens";
 
 export const API_URL = "http://localhost:3000"
@@ -49,7 +49,7 @@ api.interceptors.response.use(
                 refresh_req = false;
                 return api.request(config);
             } catch (e) {
-                console.log(e);
+                console.error(e);
                 clearTokens();
                 refresh_req = false;
             }

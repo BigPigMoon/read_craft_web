@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { clearTokens, getTokens } from '$lib/store';
+	import { clearTokens, getTokens } from '$lib/store/tokens';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -26,7 +26,7 @@
 </svelte:head>
 
 {#if $page.url.pathname !== '/signin' && $page.url.pathname !== '/signup'}
-	<div class="h-screen">
+	<div class="h-screen overflow-auto">
 		<nav>
 			<div class="flex items-center justify-center w-full">
 				<div class="navbar w-7/12 rounded-xl bg-base-200 m-4 shadow-md">
@@ -75,7 +75,7 @@
 			</div>
 		</nav>
 
-		<main class="max-w-7xl container mx-auto pt-5 h-5/6">
+		<main class="max-w-7xl container mx-auto pt-5">
 			<slot />
 		</main>
 	</div>

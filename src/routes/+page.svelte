@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { clearTokens } from '$lib/store';
+	import { clearTokens } from '$lib/store/tokens';
 
 	const handleLogoutButton = () => {
 		clearTokens();

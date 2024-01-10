@@ -3,4 +3,5 @@ export interface Lesson {
     title: string;
     cover_path?: string;
     subject?: string;
+    course_id: number;
 }

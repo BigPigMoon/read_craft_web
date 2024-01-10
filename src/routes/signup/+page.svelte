@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { API_URL } from '$lib/http';
-	import { setTokens } from '$lib/store';
+	import { setTokens } from '$lib/store/tokens';
 	import type { Tokens } from '$lib/types/tokens';
 	import axios from 'axios';
 
@@ -15,8 +15,6 @@
 	$: passwordEquals = password === repPassword;
 
 	const handleRegistration = async () => {
-		console.log('registration: ', { username, email, password, repPassword });
-
 		loading = true;
 
 		axios

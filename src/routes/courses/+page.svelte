@@ -1,11 +1,14 @@
 <script lang="ts">
 	import PlusIcon from '$lib/Icons/PlusIcon.svelte';
 	import CloseIcon from '$lib/Icons/CloseIcon.svelte';
-	import CourseLine from '$lib/components/CourseLine.svelte';
+	import CourseLine from '$lib/components/course/CourseLine.svelte';
 	import api from '$lib/http';
 	import { onMount } from 'svelte';
 	import type { Course } from '$lib/types/course';
 	import { languageNames } from '$lib/languages';
+	import { getLastLesson } from '$lib/store/lesson';
+	import type { Lesson } from '$lib/types/lesson';
+	import LastLesson from '$lib/components/course/LastLesson.svelte';
 
 	let loading = false;
 	let courses: Array<Course> = [];
@@ -17,21 +20,25 @@
 
 	let languages: string[] = [];
 
-	onMount(() => {
-		loading = true;
-		api
-			.get<Course[]>('/api/course/all?subscriptions=true')
-			.then((res) => {
-				courses = res.data;
-				console.log(courses);
-			})
-			.finally(() => {
-				loading = false;
-			});
+	let lastLesson: Lesson;
 
-		api.get<string[]>('/api/languages/available').then((res) => {
-			languages = res.data;
-		});
+	onMount(async () => {
+		loading = true;
+
+		try {
+			courses = (await api.get<Course[]>('/api/course/all?subscriptions=true')).data.sort((a, b) =>
+				a.isOwner === b.isOwner ? 0 : a.isOwner ? -1 : 1
+			);
+			languages = (await api.get<string[]>('/api/languages/available')).data;
+
+			const lastLessonId = getLastLesson();
+			if (lastLessonId) {
+				lastLesson = (await api.get<Lesson>(`/api/lesson/get/${lastLessonId}`)).data;
+			}
+		} catch (err) {
+		} finally {
+			loading = false;
+		}
 	});
 
 	const createCouresHandler = async () => {
@@ -49,16 +56,24 @@
 			id: new_course_id.data
 		};
 
-		courses = [...courses, newCourse];
+		courses = [...courses, newCourse].sort((a, b) =>
+			a.isOwner === b.isOwner ? 0 : a.isOwner ? -1 : 1
+		);
+
+		createCourseTitle = '';
 
 		// @ts-ignore
 		document.getElementById('create_course')?.close();
+
+		location.reload();
 	};
 
 	const removeItem = (event: any) => {
 		const id = event.detail;
 
 		courses = courses.filter((item) => item.id !== id);
+
+		location.reload();
 	};
 
 	$: filterCourse = courses.filter(
@@ -68,18 +83,7 @@
 </script>
 
 <div class="flex justify-between">
-	<div class="w-fit">
-		<span class="font-bold ml-6">Урок на котором вы остановились</span>
-		<div class="card bg-neutral w-fit m-4">
-			<div class="card-body">
-				<p class="card-title">Времена в английском языке</p>
-				<p class="text-sm">Курс от Read Craft</p>
-				<div class="card-actions justify-end">
-					<button class="btn btn-primary">Продолжить</button>
-				</div>
-			</div>
-		</div>
-	</div>
+	<LastLesson {loading} lesson={lastLesson} {courses} />
 	<div class="w-96 flex flex-col">
 		<div class="pr-12 mb-4 font-bold flex w-full justify-end">Язык курса</div>
 		<select class="select select-bordered w-full max-w-xs" bind:value={filterLang}>
