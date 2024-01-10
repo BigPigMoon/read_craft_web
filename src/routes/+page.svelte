@@ -1,2 +1,12 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	import { goto } from '$app/navigation';
+	import { clearTokens } from '$lib/store';
+
+	const handleLogoutButton = () => {
+		clearTokens();
+		goto('/signin');
+	};
+</script>
+
+<h1 class="text-3xl font-bold underline">Hello world!</h1>
+<button class="btn" on:click={handleLogoutButton}>Logout</button>
