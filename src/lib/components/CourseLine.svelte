@@ -11,6 +11,7 @@
 	export let courseTitle: string;
 	export let author: boolean = false;
 	export let courseId: number;
+	export let language: string;
 
 	let dispatch = createEventDispatcher();
 
@@ -22,10 +23,6 @@
 		});
 	});
 
-	const handleEditButton = () => {
-		goto(`/courses/${courseId}`);
-	};
-
 	const deleteCourse = () => {
 		api.delete(`/api/course/delete/${courseId}`);
 
@@ -34,17 +31,20 @@
 </script>
 
 <div class="w-full p-4 my-7 rounded-box">
-	<div class="flex mb-6 justify-between">
-		<h1 class="font-bold text-lg justify-start">{courseTitle}</h1>
+	<div class="flex justify-between">
+		<div>
+			<h1 class="font-bold text-lg justify-start">{courseTitle}</h1>
+			<span class="text-sm"><span class="font-bold">Язык курса:</span> {language}</span>
+		</div>
 		{#if author}
 			<div class="flex space-x-4">
 				<button class="btn btn-outline btn-primary" on:click={deleteCourse}
 					><TrashIcon /> удалить</button
 				>
-				<button class="btn btn-secondary font-bold" on:click={handleEditButton}>
+				<a href={`/courses/${courseId}`} class="btn btn-secondary font-bold">
 					<span>Редактировать</span>
 					<EditIcon />
-				</button>
+				</a>
 				<div class="btn btn-secondary font-bold">
 					<span>Ссылка</span>
 					<CopyIcon />
@@ -52,7 +52,7 @@
 			</div>
 		{/if}
 	</div>
-	<div class="carousel carousel-center w-full space-x-5">
+	<div class="carousel carousel-center w-full space-x-5 mt-3">
 		{#each lessons as lesson}
 			<CourseLesson
 				id={lesson.id}

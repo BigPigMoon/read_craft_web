@@ -150,6 +150,7 @@
 		author={course.isOwner}
 		courseTitle={course.title}
 		courseId={course.id}
+		language={languageNames[course.language]}
 		on:remove={removeItem}
 	/>
 {/each}
