@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import api from '$lib/http';
+	import api, { API_URL } from '$lib/http';
 	import { onMount } from 'svelte';
 
 	import snarkdown from 'snarkdown';
@@ -15,6 +15,8 @@
 	let newTitle: string;
 	let newSubject: string | undefined;
 
+	let lessonCover: null | File;
+
 	onMount(async () => {
 		try {
 			lesson = (await api.get(`/api/lesson/get/${lessonId}`)).data;
@@ -27,7 +29,7 @@
 	});
 
 	const handleKeyDown = (event: any) => {
-		if ((event.ctrlKey && event.key === 's') || event.key === 'ы') {
+		if (event.ctrlKey && (event.key === 's' || event.key === 'ы')) {
 			event.preventDefault();
 			saveText(); // Здесь вызывайте вашу функцию сохранения
 		}
@@ -35,6 +37,13 @@
 
 	const saveChanges = async () => {
 		console.log(newSubject);
+
+		if (lessonCover) {
+			const formData = new FormData();
+			formData.append('file', lessonCover);
+
+			lesson.cover_path = (await api.post('/api/image/upload', formData)).data;
+		}
 
 		try {
 			await api.put('/api/lesson/update', {
@@ -57,15 +66,28 @@
 
 		alert('Изменения сохранены!');
 	};
-</script>
 
-<div class="flex flex-row space-x-4 mb-4">
-	<input class="input input-bordered font-bold text-lg max-w-fit" bind:value={newTitle} />
-	<textarea class="textarea textarea-bordered resize-none w-full" bind:value={newSubject} />
-</div>
+	const fileChange = (event: any) => {
+		const file = event.target.files[0];
+
+		if (file && file.type.startsWith('image/')) {
+			lessonCover = file;
+		} else {
+			lessonCover = null;
+			console.error('Выберите файл изоображения.');
+		}
+	};
+</script>
 
 <div class="grid grid-cols-2 grid-rows-1 w-full gap-16 h-[calc(100vh-224px)]">
 	<div class="h-full flex flex-col space-y-2">
+		<input class="input input-bordered font-bold text-lg max-w-full" bind:value={newTitle} />
+		<textarea class="textarea textarea-bordered w-full" bind:value={newSubject} />
+
+		<div>
+			<input type="file" class="file-input file-input-bordered w-full" on:change={fileChange} />
+		</div>
+
 		<textarea
 			class="resize-none textarea textarea-bordered w-full h-full"
 			bind:value={lessonText}
@@ -78,7 +100,7 @@
 			<div class="flex flex-col justify-center my-0 items-center">
 				<h1 class="">{newTitle}</h1>
 				<figure>
-					<img src={lesson.cover_path} alt="" />
+					<img src="{API_URL}/api/image/{lesson.cover_path}" alt="" />
 				</figure>
 			</div>
 		{/if}

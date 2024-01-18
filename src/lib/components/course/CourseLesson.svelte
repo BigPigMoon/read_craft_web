@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { API_URL } from '$lib/http';
 	import { setLastLesson } from '$lib/store/lesson';
 
 	export let id: number;
@@ -16,7 +17,7 @@
 <div class="carousel-item">
 	<div class="card w-72 bg-neutral">
 		<figure>
-			<img src={imageUrl} alt="" />
+			<img class="w-full" src="{API_URL}/api/image/{imageUrl}" alt="" />
 		</figure>
 		<div class="card-body">
 			<h2 class="card-title">{title}</h2>

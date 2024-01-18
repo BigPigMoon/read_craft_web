@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import type { Lesson } from '$lib/types/lesson';
-	import api from '$lib/http';
+	import api, { API_URL } from '$lib/http';
 	import EditLessonCard from '$lib/components/course/EditLessonCard.svelte';
 
 	const courseId = $page.params.slug;
@@ -27,35 +27,50 @@
 
 	let createLessonTitle = '';
 	let createLessonDesc = '';
-	let createLessonCover =
-		'https://sun9-53.userapi.com/impg/j9ucAouuIb4M0QCPW1j_U5tuT9fD-G2KOUOWmQ/l6JXJsGsc54.jpg?size=510x518&quality=96&sign=b86a49f053a93b42a66233e5dc39d8fc&type=album';
+	let createLessonCover: null | File;
 
 	const createLesson = async () => {
-		if (createLessonError) return;
+		if (createLessonError && !createLessonCover) return;
 
-		const res = await api.post<number>('/api/lesson/create', {
-			title: createLessonTitle,
-			subject: createLessonDesc.length === 0 ? null : createLessonDesc,
-			cover_path: createLessonCover, // FIXME: cover doesn't set by user
-			course_id: Number.parseInt(courseId)
+		const formData = new FormData();
+		formData.append('file', createLessonCover);
+
+		api.post('/api/image/upload', formData).then(async (res) => {
+			const createLessonRes = await api.post<number>('/api/lesson/create', {
+				title: createLessonTitle,
+				subject: createLessonDesc.length === 0 ? null : createLessonDesc,
+				cover_path: res.data, // FIXME: cover doesn't set by user
+				course_id: Number.parseInt(courseId)
+			});
+
+			const newLesson: Lesson = {
+				id: createLessonRes.data,
+				title: createLessonTitle,
+				cover_path: `${API_URL}/lesson/images/${res.data}`,
+				subject: createLessonDesc,
+				course_id: Number.parseInt(courseId)
+			};
+
+			lessons.push(newLesson);
+			lessons = lessons;
+
+			// @ts-ignore
+			document.getElementById('create_lesson')?.close();
+
+			createLessonTitle = '';
+			createLessonDesc = '';
 		});
+	};
 
-		const newLesson: Lesson = {
-			id: res.data,
-			title: createLessonTitle,
-			cover_path: createLessonCover,
-			subject: createLessonDesc,
-			course_id: Number.parseInt(courseId)
-		};
+	const fileChange = (event) => {
+		const file = event.target.files[0];
 
-		lessons.push(newLesson);
-		lessons = lessons;
-
-		// @ts-ignore
-		document.getElementById('create_lesson')?.close();
-
-		createLessonTitle = '';
-		createLessonDesc = '';
+		if (file && file.type.startsWith('image/')) {
+			createLessonCover = file;
+		} else {
+			createLessonCover = null;
+			console.error('Выберите файл изоображения.');
+		}
 	};
 
 	const removeItem = (event: any) => {
@@ -98,9 +113,13 @@
 
 					<div>
 						<div class="label">
-							<span class="label-text">Превью курса</span>
+							<span class="label-text">Превью урока</span>
 						</div>
-						<input type="file" class="file-input file-input-bordered w-full max-w-xs" disabled />
+						<input
+							type="file"
+							class="file-input file-input-bordered w-full"
+							on:change={fileChange}
+						/>
 					</div>
 
 					<div>
@@ -114,7 +133,7 @@
 						/>
 					</div>
 					{#if createLessonError}
-						<span class="label-text-alt text-error">Имя курса не указано</span>
+						<span class="label-text-alt text-error">Имя урока не указано</span>
 					{/if}
 				</div>
 			</form>

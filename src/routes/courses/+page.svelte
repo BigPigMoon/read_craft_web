@@ -128,7 +128,7 @@
 							<span class="label-text">Язык курса</span>
 						</div>
 						<select class="select select-bordered w-full" bind:value={createCourseLang}>
-							{#each languages as code, index}
+							{#each languages as code}
 								<option value={code}>{languageNames[code]}</option>
 							{/each}
 						</select>

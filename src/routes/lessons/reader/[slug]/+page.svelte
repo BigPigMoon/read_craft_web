@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import api from '$lib/http';
+	import api, { API_URL } from '$lib/http';
 	import { onMount } from 'svelte';
 
 	import snarkdown from 'snarkdown';
@@ -32,7 +32,7 @@
 			<h1 class="text-center">{lesson.title}</h1>
 
 			<div class="flex justify-center my-0">
-				<img src={lesson.cover_path} alt="" />
+				<img class="w-fit" src="{API_URL}/api/image/{lesson.cover_path}" alt="" />
 			</div>
 		{/if}
 		{@html snarkdown(lessonText || '')}
